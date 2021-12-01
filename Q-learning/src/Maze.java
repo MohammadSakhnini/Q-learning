@@ -3,7 +3,7 @@ public class Maze {
     private int mazeWidth;
     private int mazeHeight;
     private int states = 0;
-    private int current_row, current_column = 0;
+    private int current_row, current_column, last_state = 0;
     private int[][] map;
 
     public Maze(int width, int height) {
@@ -34,12 +34,17 @@ public class Maze {
     }
 
     private void clear_current() {
-	map[current_column][current_column] = 0;
+	map[current_row][current_column] = 0;
+    }
+
+    private void save_current() {
+	last_state = map[current_row][current_column];
     }
 
     public void moveRight() {
 	clear_current();
 	current_column += 1;
+	save_current();
 	map[current_row][current_column] = 1;
 
     }
@@ -47,6 +52,7 @@ public class Maze {
     public void moveLeft() {
 	clear_current();
 	current_column -= 1;
+	save_current();
 	map[current_row][current_column] = 1;
 
     }
@@ -54,6 +60,7 @@ public class Maze {
     public void moveDown() {
 	clear_current();
 	current_row += 1;
+	save_current();
 	map[current_row][current_column] = 1;
 
     }
@@ -61,6 +68,7 @@ public class Maze {
     public void moveUp() {
 	clear_current();
 	current_row -= 1;
+	save_current();
 	map[current_row][current_column] = 1;
 
     }
@@ -105,6 +113,35 @@ public class Maze {
 
     public int getCurrent_row() {
 	return current_row;
+    }
+
+    public int getLastState() {
+	return last_state;
+    }
+
+    public boolean isFinalState() {
+	if (last_state == 2) {
+	    return true;
+	}
+	return false;
+    }
+
+    public boolean isGoalfound(int state) {
+	int i = state / mazeWidth; // gets row from 2d to 1d
+	int j = state - i * mazeWidth;// gets column from 2d to 1d
+	return map[i][j] == 2;
+    }
+
+    public int getMazeHeight() {
+	return mazeHeight;
+    }
+
+    public int getMazeWidth() {
+	return mazeWidth;
+    }
+
+    public int[][] getMap() {
+	return map;
     }
 
     public String toString() {
