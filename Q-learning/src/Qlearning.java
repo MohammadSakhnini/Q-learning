@@ -112,14 +112,14 @@ public class Qlearning {
     public void train(int epoch) {
 	initQ();
 	Random random = new Random();
+	int laststate = -1;
 	for (int i = 0; i < epoch; i++) {
 	    int current_state = random.nextInt(states);
 	    while (!map.isGoalfound(current_state)) {
 		var validActions = validActions(current_state);
-		
 		// look randomly for valid state
 		var keysAsArray = new ArrayList<>(validActions.keySet());
-		var rndRow = keysAsArray.get(random.nextInt(keysAsArray.size()));
+		var rndRow = keysAsArray.get(Integer.valueOf(random.nextInt(keysAsArray.size())));
 
 		var rndColumn = validActions.get(rndRow);
 		double current_Q = Q[current_state][rndRow][rndColumn];
@@ -130,7 +130,13 @@ public class Qlearning {
 
 		double new_Q = current_Q + l_rate * (actionReward + dc_factor * maxQ - current_Q);
 		Q[current_state][rndRow][rndColumn] = new_Q; // update Q
-
+		
+		if(getStateFromLoc(rndRow, rndColumn) == laststate)
+		{
+		 current_state = random.nextInt(states);
+		 continue;
+		}
+		laststate = current_state;
 		current_state = getStateFromLoc(rndRow, rndColumn); // move to next state
 
 	    }
