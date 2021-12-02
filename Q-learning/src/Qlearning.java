@@ -13,11 +13,9 @@ public class Qlearning {
     private Maze map;
     private int[][][] R;
     private double[][][] Q;
-    private int epoch;
 
-    public Qlearning(Maze map, int epoch) {
+    public Qlearning(Maze map) {
 	int states = map.getStates();
-	this.epoch = epoch;
 	width = map.getMazeWidth();
 	height = map.getMazeHeight();
 	R = new int[states][height][width];
@@ -26,8 +24,6 @@ public class Qlearning {
 	this.map = map;
 
 	mapR();
-	generateQ();
-
     }
 
     /**
@@ -78,7 +74,7 @@ public class Qlearning {
 		    }
 
 		    int right = j + 1;
-		    if (right < temp.length) {
+		    if (right < temp[0].length) {
 			if (temp[i][right] == 0 || temp[i][right] == 1) {
 			    R[k][i][right] = 0;
 			} else if (temp[i][right] == 2) {
@@ -88,7 +84,7 @@ public class Qlearning {
 			}
 		    }
 		    int down = i + 1;
-		    if (down < temp[0].length) {
+		    if (down < temp.length) {
 			if (temp[down][j] == 0 || temp[down][j] == 1) {
 			    R[k][down][j] = 0;
 			} else if (temp[down][j] == 2) {
@@ -113,21 +109,21 @@ public class Qlearning {
 	}
     }
 
-    public void generateQ() {
+    public void train(int epoch) {
 	initQ();
 	Random random = new Random();
 	for (int i = 0; i < epoch; i++) {
 	    int current_state = random.nextInt(states);
-
 	    while (!map.isGoalfound(current_state)) {
 		var validActions = validActions(current_state);
-
+		
 		// look randomly for valid state
 		var keysAsArray = new ArrayList<>(validActions.keySet());
 		var rndRow = keysAsArray.get(random.nextInt(keysAsArray.size()));
 
 		var rndColumn = validActions.get(rndRow);
 		double current_Q = Q[current_state][rndRow][rndColumn];
+		var s = getStateFromLoc(rndRow, rndColumn);
 		double maxQ = bestQValue(getStateFromLoc(rndRow, rndColumn));
 
 		int actionReward = R[current_state][rndRow][rndColumn];
@@ -138,6 +134,7 @@ public class Qlearning {
 		current_state = getStateFromLoc(rndRow, rndColumn); // move to next state
 
 	    }
+	    System.out.println("Epoch#" + i);
 	}
     }
 
@@ -205,8 +202,8 @@ public class Qlearning {
     }
 
     private HashMap<Integer, Integer> getLocFromState(int state) {
-	int row = state / width;
-	int column = state - row / height;
+	int row = state / height;
+	int column = state % width;
 	var temp = new HashMap<Integer, Integer>();
 	temp.put(row, column);
 	return temp;
@@ -214,7 +211,7 @@ public class Qlearning {
 
     public HashMap<Integer, Integer> policies(int state) {
 	var validActions = validActions(state);
-	double max = 0.0;
+	double max = Double.MIN_VALUE;
 	var target = new HashMap<Integer, Integer>();
 	target = getLocFromState(state);
 	for (var action : validActions.keySet()) {

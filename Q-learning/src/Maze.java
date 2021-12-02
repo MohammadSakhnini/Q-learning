@@ -4,6 +4,7 @@ public class Maze {
     private int mazeHeight;
     private int states = 0;
     private int current_row, current_column, last_state = 0;
+    private Agent agent;
     private int[][] map;
 
     public Maze(int width, int height) {
@@ -18,58 +19,25 @@ public class Maze {
 	map[0][0] = 1;
     }
 
+    public void addAgent(Agent agent) {
+	this.agent = agent;
+	agent.setMap(map);
+    }
+
     public int getStates() {
 	return mazeWidth * mazeHeight;
     }
 
     public void setStart(int row, int column) {
-	clear_current();
-	if (map[row][column] == 3) {
-	    throw new RuntimeException("Can't start on a trap");
+	if (map[row][column] == 3 || map[row][column] == 2) {
+	    throw new RuntimeException("Can't start on an object");
 	}
+	var oldclm = agent.getCurrent_column();
+	var oldrow = agent.getCurrent_row();
+	map[oldrow][oldclm] = 0;
+	agent.setCurrent_row(row);
+	agent.setCurrent_column(column);
 	map[row][column] = 1;
-	current_row = row;
-	current_column = column;
-
-    }
-
-    private void clear_current() {
-	map[current_row][current_column] = 0;
-    }
-
-    private void save_current() {
-	last_state = map[current_row][current_column];
-    }
-
-    public void moveRight() {
-	clear_current();
-	current_column += 1;
-	save_current();
-	map[current_row][current_column] = 1;
-
-    }
-
-    public void moveLeft() {
-	clear_current();
-	current_column -= 1;
-	save_current();
-	map[current_row][current_column] = 1;
-
-    }
-
-    public void moveDown() {
-	clear_current();
-	current_row += 1;
-	save_current();
-	map[current_row][current_column] = 1;
-
-    }
-
-    public void moveUp() {
-	clear_current();
-	current_row -= 1;
-	save_current();
-	map[current_row][current_column] = 1;
 
     }
 
@@ -96,7 +64,6 @@ public class Maze {
 	    throw new RuntimeException("Given string is not a defined move");
 	}
 	return false;
-
     }
 
     public void setTrap(int row, int column) {
@@ -105,14 +72,6 @@ public class Maze {
 
     public void setGoal(int row, int column) {
 	map[row][column] = 2;
-    }
-
-    public int getCurrent_column() {
-	return current_column;
-    }
-
-    public int getCurrent_row() {
-	return current_row;
     }
 
     public int getLastState() {
@@ -128,7 +87,7 @@ public class Maze {
 
     public boolean isGoalfound(int state) {
 	int i = state / mazeWidth; // gets row from 2d to 1d
-	int j = state - i * mazeWidth;// gets column from 2d to 1d
+	int j = state % mazeWidth;// gets column from 2d to 1d
 	return map[i][j] == 2;
     }
 
